@@ -1,0 +1,10 @@
+You have never seen this show. Read only the clip below and answer honestly from it alone.
+1. Who are the main characters, and how are they related?
+2. What is the conflict?
+3. What do you want to see next?
+If you cannot answer 1 or 2 from the clip, say so and set can_answer to false.
+
+Return ONLY JSON: {"characters":"","conflict":"","next":"","can_answer":true}
+
+CLIP:
+{{clip}}

@@ -1,0 +1,90 @@
+llm:
+  provider: openai_compat
+  base_url: https://generativelanguage.googleapis.com/v1beta/openai
+  model: "gemini-3.6-flash"
+  api_key_env: LLM_API_KEY
+  temperature: 0.2
+  retries: 6
+  retry_base_s: 5
+  timeout_s: 120
+  min_interval_s: 3
+  primary_cooldown_s: 300
+  # ONE fixed model scores every promo, so rankings are comparable. Its fallbacks below are used only when it is
+  # unavailable; then each promo says which model scored it and the audit warns. gemini-3.6-flash judges better
+  # but has less free quota.
+  scoring:
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai
+    model: gemini-3.5-flash-lite
+    api_key_env: LLM_API_KEY
+    temperature: 0.0     # as repeatable as the provider allows
+    samples: 1           # 1 = fast (one scoring pass). 3 = score twice, a 3rd time if they disagree, use the mean (3x slower, steadier)
+    # used only if the scoring model is unavailable (quota / outage); such promos are flagged and the audit warns
+    fallbacks:
+      - {base_url: "https://generativelanguage.googleapis.com/v1beta/openai", model: gemini-3.1-flash-lite, api_key_env: LLM_API_KEY}
+      - {base_url: "https://openrouter.ai/api/v1", model: "nvidia/nemotron-3-ultra-550b-a55b:free", api_key_env: OPENROUTER_API_KEY}
+      - {base_url: "https://openrouter.ai/api/v1", model: "google/gemma-4-31b-it:free", api_key_env: OPENROUTER_API_KEY}
+  fallbacks:
+    # extra Gemini models on the same key: each has its own free daily quota
+    - base_url: https://generativelanguage.googleapis.com/v1beta/openai
+      model: gemini-3.5-flash-lite
+      api_key_env: LLM_API_KEY
+    - base_url: https://generativelanguage.googleapis.com/v1beta/openai
+      model: gemini-3.1-flash-lite
+      api_key_env: LLM_API_KEY
+    # free OpenRouter models change often; list current ones at https://openrouter.ai/models?q=free
+    - base_url: https://openrouter.ai/api/v1
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+      api_key_env: OPENROUTER_API_KEY
+    - base_url: https://openrouter.ai/api/v1
+      model: google/gemma-4-31b-it:free
+      api_key_env: OPENROUTER_API_KEY
+    # paid, cheap (~$0.59/M input tokens), no daily cap -- uncomment for a reliable full run:
+    # - base_url: https://openrouter.ai/api/v1
+    #   model: meta-llama/llama-3.3-70b-instruct
+    #   api_key_env: OPENROUTER_API_KEY
+
+paths:
+  data_dir: data/input
+  outputs_dir: outputs
+
+pipeline:
+  candidates_per_episode: 3
+  max_retries: 2
+  include_camera_in_prompt: true
+  run_cold_viewer: false
+  # near-miss length fix (see repair.py): strict check stays the same, repairs are labelled on the promo
+  duration_repair: {enabled: true, max_miss_s: 6.0, allow_extend_end: true}
+  # cross-episode promos joined from parts of clips that already passed every rule (new prompt: no re-generation)
+  assemble: {enabled: true, pool: 15, max_promos: 3}
+
+validation:
+  min_duration_s: 20
+  max_duration_s: 60
+  first_beat_max_s: 3.0
+  cliff_tail_max_s: 4.0   # at most a short reaction beat after the cliffhanger line, never the answer
+  max_segments: 4
+  snap_end: last_spoken
+  end_pad_s: 0.3
+
+ranking:
+  # emotional barely separated clips in run_A (94 of 141 scores were 3), so it weighs least. Proposed, not from Kuku.
+  weights: {hook: 0.30, cliffhanger: 0.35, standalone: 0.25, emotional: 0.10}
+  cold_viewer_fail_penalty: 0.0
+  diversity: {max_per_hook_type: 0, top_k: 10}
+  # head-to-head: the scoring model orders the top_n clips against each other (2 calls: list forward + reversed)
+  compare: {enabled: true, top_n: 12}
+  max_overlap_share: 0.5
+  review_gap: 0.5          # flag a promo for review when its repeat scoring passes differ by this much (0-5 scale)   # drop a clip only if more than half of it repeats a better-ranked clip
+
+# posting plan (slate.py): day-by-day order built by code from the ranking -> posting_plan.md
+slate:
+  size: 7                 # days / promos in the plan
+  pool: 20                # chosen from the best 20 ranked promos
+  max_per_hook_type: 2    # variety: no more than 2 of the same hook type
+  short_max_s: 30         # up to 30s -> TikTok / Reels, longer -> YouTube Shorts
+
+# web server limits (server.py). They protect YOUR API key when the page is public. Re-runs of episodes that were
+# already processed reuse saved answers and do not count.
+web:
+  daily_call_budget: 0        # 0 = no cap. For a public link, set e.g. 250 to protect your API key
+  max_episodes_per_run: 60

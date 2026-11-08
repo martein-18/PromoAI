@@ -1,0 +1,58 @@
+EPISODE NUMBER: Episode 3
+EPISODE LOGLINE: Accused of murder, Mara calls a witness nobody can see.
+CONTINUITY NOTES: Follows Episode 2.
+
+--- SCRIPT START ---
+
+SCENE 01
+Scene heading: INT. GRAND BALLROOM - NIGHT
+Scene start: 00:00.00
+Scene end: 00:46.00
+
+Actions and dialogue:
+
+**ACTION:**
+Start: (00:00.00) | End: (00:02.50)
+Mara is dragged into the courtroom in chains.
+
+**JUDGE (Stern):**
+Start: (00:02.50) | End: (00:06.00)
+"Mara Vale, you stand accused of your mother's murder."
+
+**MARA (Defiant):**
+Start: (00:06.50) | End: (00:10.00)
+"My mother is alive. She is sitting right there."
+
+**CAMERA:**
+Start: (00:10.00) | End: (00:13.00)
+The crowd turns toward an empty seat.
+
+**ACTION:**
+Start: (00:13.00) | End: (00:16.00)
+The seat is empty except for a black veil.
+
+**VICTOR (Smiling):**
+Start: (00:16.00) | End: (00:21.00)
+"Grief has made her see ghosts, Your Honour."
+
+**ACTION:**
+Start: (00:21.00) | End: (00:25.00)
+Mara lunges toward Victor; guards hold her back.
+
+**MARA (Screaming):**
+Start: (00:25.00) | End: (00:30.00)
+"She told me everything! The wine, the ring, the fire!"
+
+**JUDGE (Cold):**
+Start: (00:30.50) | End: (00:35.00)
+"Then call your witness."
+
+**ACTION:**
+Start: (00:35.00) | End: (00:39.00)
+The courtroom doors creak open slowly.
+
+**CAMERA:**
+Start: (00:39.00) | End: (00:46.00)
+Low angle on the doorway: nobody is there.
+
+--- SCRIPT END ---

@@ -1,0 +1,9 @@
+Below are the loglines and continuity notes of every episode of a short drama series.
+Produce a "show bible" used to keep character names consistent when analysing single episodes.
+- Characters sometimes appear under different labels (e.g. a description in one episode, a name in another). Merge labels that clearly refer to the same person into aliases.
+- Only use information present below. Do not guess.
+
+Return ONLY JSON:
+{"premise":"2-3 sentences","characters":[{"name":"","description":""}],"aliases":{"alias label":"canonical name"}}
+
+{{episodes}}

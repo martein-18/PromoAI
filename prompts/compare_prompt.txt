@@ -1,0 +1,11 @@
+You are a promo editor for a short-drama series. Below are {{n}} candidate promo clips, labelled with letters.
+Order ALL of them from the best promo to the worst. A good promo makes a scrolling stranger stop in the first
+seconds, is easy to follow without the earlier episodes, and stops at an unresolved moment that makes the viewer
+need the next episode.
+
+Compare the clips against each other; do not judge them one at a time. The letters and the order they are listed
+in mean nothing. Use every letter exactly once.
+
+Return ONLY JSON: {"order":["<best letter>", "...", "<worst letter>"],"reason":"one sentence on what decided the top spot"}
+
+{{clips}}

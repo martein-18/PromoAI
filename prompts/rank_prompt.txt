@@ -1,0 +1,10 @@
+Below is the final ranked list of promo clips for a short-drama series, best first. Scores are 1-5.
+Explain the ordering to an editor who must decide which clip to post first.
+- "overall": 2 sentences: which clip to post first and why, in terms of hook, cliffhanger and clarity for new viewers.
+- "items": for EACH rank, ONE sentence saying why it sits at that position (compare with its neighbours where useful).
+Some top clips were placed by a head-to-head comparison rather than by their scores; this is marked on their line.
+Use only the information given. Do not invent content.
+
+Return ONLY JSON: {"overall":"","items":[{"rank":1,"reason":""}]}
+
+{{promos}}

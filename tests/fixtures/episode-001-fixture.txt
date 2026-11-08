@@ -1,0 +1,66 @@
+EPISODE NUMBER: Episode 1
+EPISODE LOGLINE: Mara crashes Victor's ball to reclaim her mother's ring and is met by a veiled stranger.
+CONTINUITY NOTES: First episode.
+
+--- SCRIPT START ---
+
+SCENE 01
+Scene heading: INT. GRAND BALLROOM - NIGHT
+Scene start: 00:00.00
+Scene end: 00:50.00
+
+Actions and dialogue:
+
+**CAMERA:**
+Start: (00:00.00) | End: (00:03.00)
+Wide shot of a candlelit ballroom full of guests.
+
+**ACTION:**
+Start: (00:00.50) | End: (00:02.50)
+Mara drops her glass; it shatters on the marble floor.
+
+**VICTOR (Cold):**
+Start: (00:03.00) | End: (00:06.00)
+"You were never invited, Mara."
+
+**MARA (Shaking):**
+Start: (00:06.50) | End: (00:10.00)
+"I came for what you stole from my mother."
+
+**CAMERA:**
+Start: (00:10.00) | End: (00:13.00)
+Close-up of Victor's ring, engraved with her mother's crest.
+
+**VICTOR (Smirking):**
+Start: (00:13.00) | End: (00:17.50)
+"Then take it. If you can explain where you were the night she died."
+
+**ACTION:**
+Start: (00:17.50) | End: (00:21.00)
+The guests fall silent and turn toward Mara.
+
+**MARA (Breaking):**
+Start: (00:21.00) | End: (00:26.00)
+"I was with her. I held her hand until the end."
+
+**VICTOR (Quiet, Menacing):**
+Start: (00:26.50) | End: (00:33.30)
+"Then you know who poured the wine."
+
+**ACTION:**
+Start: (00:33.00) | End: (00:36.00)
+The doors burst open. A WOMAN in a black veil stands in the doorway.
+
+**CAMERA:**
+Start: (00:36.00) | End: (00:45.00)
+Slow push-in on the veiled woman's face, hidden in shadow.
+
+**MARA (Whisper):**
+Start: (00:45.50) | End: (00:47.00)
+"Mother?"
+
+**ACTION:**
+Start: (00:47.00) | End: (00:50.00)
+The veiled woman lifts her veil.
+
+--- SCRIPT END ---

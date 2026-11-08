@@ -1,0 +1,23 @@
+You are a promo editor for a short-drama series. Below are promo clips that already passed every rule, from
+DIFFERENT episodes. Each line is [episode.event_id] start-end speaker/type: text.
+
+Build up to {{n}} NEW promos that join moments from TWO or THREE different episodes into one stronger promo, for
+example a setup or hook from an early episode followed by an escalation or cliffhanger from a later one.
+A good joined promo:
+- opens on its strongest hook (within the first 3 seconds of the first part),
+- makes sense to a stranger: the parts must clearly belong to the same conflict,
+- ends on an unresolved moment, never on the answer,
+- lasts 20 to 60 seconds in total.
+
+Rules:
+- Every part must be a continuous range of lines taken from ONE of the clips below: [episode, first_id, last_id].
+- Use at least two different episodes. Put the parts in the order the viewer should see them.
+- hook_event is an event_id in the FIRST part; cliffhanger_event is an event_id in the LAST part.
+- Do not invent lines. If no join is clearly better than the single clips, return {"promos": []}.
+
+Return ONLY JSON:
+{"promos":[{"segments":[[episode,first_id,last_id],[episode,first_id,last_id]],"hook_event":id,"cliffhanger_event":id,
+"hook":"","cliffhanger":"","why":"one line on why the join beats either clip alone"}]}
+
+CLIPS:
+{{clips}}

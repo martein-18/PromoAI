@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>PromoAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --paper:#F3F5FA; --panel:#FFFFFF; --ink:#111A2C; --steel:#5B6980; --edge:#D5DCE8; --stage:#E2E8F3;
+  --in:#0B8F63; --out:#D6374A; --focus:#2F6BFF;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 76px);background:var(--paper)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 "Schibsted Grotesk",system-ui,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--paper);z-index:30}
+button,input,summary{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(243,245,250,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--edge)}
+.bar{display:flex;align-items:center;gap:24px;height:60px}
+.mark{display:flex;align-items:center;gap:10px;font-weight:800;font-size:25px;letter-spacing:-.01em}
+.reel{width:22px;height:26px;border-radius:4px;background:var(--ink);position:relative}
+.reel::before,.reel::after{content:"";position:absolute;left:3px;right:3px;height:4px;background:repeating-linear-gradient(90deg,var(--paper) 0 3px,transparent 3px 6px)}
+.reel::before{top:3px}.reel::after{bottom:3px}
+.pill{font-size:13px;font-weight:500;border:1px solid var(--steel);color:var(--steel);border-radius:999px;padding:1px 10px}
+nav{margin-left:auto;display:flex;gap:6px}
+nav button{background:none;border:0;padding:8px 12px;border-radius:10px;cursor:pointer;color:var(--steel);display:flex;gap:8px;align-items:center}
+nav button b{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:21px;line-height:1}
+nav button[aria-current="step"]{color:var(--ink);background:var(--panel);box-shadow:inset 0 -3px 0 var(--ink)}
+@media(max-width:760px){nav button span{display:none}.pill{display:none}}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:30px;align-items:center;padding:44px 0 0}
+@media(max-width:940px){.hero{grid-template-columns:1fr}}
+h1{font-size:clamp(38px,5.6vw,68px);line-height:1.01;margin:0 0 18px;letter-spacing:-.03em;font-weight:800}
+.lead{font-size:19px;color:var(--steel);max-width:30em;margin:0 0 22px}
+.inout{display:grid;gap:10px;margin:0 0 26px;padding:0;list-style:none;max-width:32em}
+.inout li{display:grid;grid-template-columns:78px 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--edge)}
+.inout b{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:24px;line-height:1.1}
+.scene{position:relative;height:500px;perspective:1600px}
+@media(max-width:560px){.scene{height:400px}.world{scale:.74}}
+.backdrop{position:absolute;inset:14px 0 6px 24px;border-radius:34px;background:var(--stage)}
+.world{position:absolute;left:47%;top:52%;width:0;height:0;transform-style:preserve-3d;
+  transform:rotateX(calc(7deg + var(--rx,0deg))) rotateY(calc(-17deg + var(--ry,0deg) + var(--sc,0)*20deg));transition:transform .25s ease-out}
+
+/* extruded 3D objects (phones and script pages) */
+.ph3d{position:absolute;transform-style:preserve-3d;--rad:30px}
+.ph3d .ly,.pg3d .ly,.slab .ly{position:absolute;inset:0;border-radius:var(--rad);background:color-mix(in srgb,var(--c) 52%,#000);transform:translateZ(calc(var(--k)*-1))}
+.face{position:absolute;inset:0;border-radius:var(--rad);padding:20px 18px;display:flex;flex-direction:column;color:#fff;overflow:hidden;
+  background:linear-gradient(158deg,color-mix(in srgb,var(--c) 78%,#fff) 0%,var(--c) 42%,color-mix(in srgb,var(--c) 68%,#000) 100%);
+  box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.18)}
+.face::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--mx,28%) var(--my,8%),rgba(255,255,255,.38),transparent 46%)}
+.face .top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.face .ep{font-size:32px;font-weight:700;line-height:1}
+.face .rk{font-size:44px;font-weight:700;line-height:.8;opacity:.92}
+.face .q{margin:auto 0;font-size:20px;line-height:1.24;font-weight:700;position:relative;z-index:1;text-wrap:balance}
+.face .cut{display:flex;justify-content:space-between;align-items:center;font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;position:relative;z-index:1}
+.face .cut i{font-style:normal;display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px}
+.face .cut .a i{background:#58E5AC}.face .cut .b i{background:#FF8D9A}
+.face .dur{margin-top:6px;font-size:13.5px;opacity:.85;position:relative;z-index:1}
+.pgface{position:absolute;inset:0;border-radius:6px;background:#fff;border:1px solid var(--edge);overflow:hidden}
+.pgface .band{position:absolute;left:0;right:0;top:0;height:40px;background:var(--c);color:#fff;padding:7px 14px;font-size:24px;font-weight:700}
+.pgface::after{content:"";position:absolute;left:14px;right:14px;top:56px;bottom:14px;background:repeating-linear-gradient(var(--edge) 0 3px,transparent 3px 11px)}
+.pg3d{position:absolute;width:210px;height:284px;left:-105px;top:-142px;transform-style:preserve-3d;--rad:6px}
+.pg3d .ly{border-radius:6px}
+.hp{width:190px;height:338px;left:-95px;top:-169px;transform:translate3d(var(--x),var(--y),var(--z)) rotateY(var(--ry2)) rotateZ(var(--rz,0deg));animation:bob var(--bt,6s) ease-in-out infinite alternate;animation-delay:var(--bd,0s)}
+.hp .face{font-size:15px}.hp .face .q{font-size:17px}.hp .face .ep{font-size:28px}.hp .face .rk{font-size:38px}.hp .face .cut{font-size:20px}
+@keyframes bob{to{translate:0 -16px}}
+
+/* sections */
+section{padding:72px 0 24px;scroll-margin-top:70px}
+.sh{display:flex;align-items:baseline;gap:16px;margin-bottom:28px}
+.sh .n{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:72px;line-height:.8;font-weight:700;color:var(--ink)}
+.sh h2{margin:0;font-size:32px;letter-spacing:-.02em;font-weight:800}
+.sh p{margin:4px 0 0;color:var(--steel)}
+.btn{border:1.5px solid var(--ink);background:transparent;border-radius:12px;padding:11px 18px;cursor:pointer;font-weight:600}
+.btn:hover{background:var(--panel)}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.primary:hover{background:var(--ink);filter:brightness(1.2)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+
+/* step 1 */
+.s1{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:48px;align-items:start}
+@media(max-width:900px){.s1{grid-template-columns:1fr;gap:28px}}
+.how p{margin:0 0 14px;max-width:30em}
+.how .small{color:var(--steel);font-size:14px}
+.drop{position:relative;height:460px;border:2px dashed var(--steel);border-radius:26px;background:var(--panel);perspective:1200px;overflow:hidden;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s}
+.drop.over{border-color:var(--in);background:#F0FAF6;box-shadow:0 0 0 6px rgba(11,143,99,.12)}
+.drop.over .plate{--lift:50px}
+.plate{--tx:0deg;--ty:0deg;--lift:0px;position:absolute;left:50%;top:41%;width:340px;height:236px;transform-style:preserve-3d;
+  transform:translate(-50%,-50%) translateZ(var(--lift)) rotateX(calc(58deg + var(--ty))) rotateZ(calc(-26deg + var(--tx)));transition:transform .25s ease-out}
+.base{position:absolute;inset:0;border-radius:12px;background:linear-gradient(135deg,#2B3850,#151E31);box-shadow:0 46px 40px -8px rgba(17,26,44,.38)}
+.base::before,.base::after{content:"";position:absolute;left:10px;right:10px;height:10px;background:repeating-linear-gradient(90deg,#F3F5FA 0 9px,transparent 9px 18px);opacity:.9;border-radius:2px}
+.base::before{top:8px}.base::after{bottom:8px}
+.slab{position:absolute;inset:30px 26px;transform-style:preserve-3d;--rad:6px;
+  transform:translate3d(var(--x),var(--y),var(--z)) rotateZ(var(--r));animation:land .6s cubic-bezier(.2,.8,.3,1) backwards;animation-delay:var(--d)}
+@keyframes land{from{transform:translate3d(var(--x),var(--y),calc(var(--z) + 260px)) rotateZ(calc(var(--r) + 16deg));opacity:0}}
+.dropmsg{position:absolute;left:0;right:0;bottom:0;padding:20px 22px;background:linear-gradient(rgba(255,255,255,0),#fff 44%);text-align:center}
+.dropmsg strong{display:block;font-size:22px}
+.dropmsg span{color:var(--steel);font-size:14px}
+.eplist{list-style:none;margin:28px 0 0;padding:0;border-top:1px solid var(--edge)}
+.eplist li{display:grid;grid-template-columns:128px minmax(0,1fr) 64px 76px;gap:14px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--edge);animation:fadein .3s}
+.eplist .e{display:flex;align-items:center;gap:10px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:24px;font-weight:600}
+.eplist .e i{width:14px;height:14px;border-radius:4px;background:var(--c)}
+.eplist .l{color:var(--steel);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.eplist .t{font-variant-numeric:tabular-nums;text-align:right}
+.eplist .bad{color:var(--out);grid-column:2/5}
+.eplist .x{background:none;border:0;color:var(--steel);cursor:pointer;text-align:right}
+@media(max-width:620px){.eplist li{grid-template-columns:110px minmax(0,1fr) 56px}.eplist .x{display:none}}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}}
+.go{display:flex;align-items:center;gap:16px;margin-top:22px;flex-wrap:wrap}
+.go span{color:var(--steel);font-size:14px}
+
+/* step 2 */
+.track{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;perspective:1000px}
+@media(max-width:980px){.track{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.st{position:relative;border:1.5px solid var(--edge);border-radius:18px;padding:14px;background:var(--panel);opacity:.6;transition:transform .5s,opacity .4s,border-color .4s,box-shadow .4s;min-height:156px}
+.st h3{margin:8px 0 4px;font-size:17px;line-height:1.2}
+.st p{margin:0;font-size:13.5px;color:var(--steel)}
+.kind{display:inline-block;font-size:12.5px;border-radius:999px;padding:0 9px;border:1px solid var(--steel);color:var(--steel)}
+.kind.ai{background:var(--ink);border-color:var(--ink);color:#fff}
+.st .fill{position:absolute;left:14px;right:14px;bottom:12px;height:4px;border-radius:2px;background:var(--edge);overflow:hidden}
+.st .fill i{display:block;height:100%;width:0;background:var(--ink)}
+.st.active{opacity:1;border-color:var(--ink);transform:translateZ(70px) rotateX(-7deg);box-shadow:0 26px 28px -14px rgba(17,26,44,.4)}
+.st.active .fill i{width:38%;animation:slide 1.1s ease-in-out infinite alternate}
+.st.active.det .fill i{animation:none;margin-left:0;transition:width .5s}
+@keyframes slide{from{margin-left:0}to{margin-left:62%}}
+.st.done{opacity:1;border-color:var(--in)}
+.st.done .fill i{width:100%;background:var(--in)}
+.st.stop{opacity:1;border-color:var(--out)}
+.st.stop .fill i{width:100%;background:var(--out)}
+.eprank{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+.eprank th,.eprank td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--edge);vertical-align:top}
+.eprank td.n{white-space:nowrap}
+@keyframes fill{to{width:100%}}
+.legend{margin:20px 0 0;color:var(--steel);max-width:52em}
+.log{margin:18px 0 0;padding:0;list-style:none;min-height:30px}
+.log li{padding:6px 0;border-bottom:1px solid var(--edge);animation:fadein .3s}
+.log time{color:var(--steel);font-variant-numeric:tabular-nums;margin-right:12px}
+
+/* step 3 */
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+.out{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:36px;align-items:start}
+@media(max-width:980px){.out{grid-template-columns:1fr}}
+.stage{position:relative;height:560px;perspective:1600px;outline-offset:6px;background:var(--stage);border-radius:30px;overflow:hidden}
+.stage::after{content:"";position:absolute;left:10%;right:10%;bottom:44px;height:56px;background:radial-gradient(ellipse at center,rgba(17,26,44,.26),transparent 68%);z-index:0}
+.ph{position:absolute;left:50%;top:48%;width:246px;height:438px;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.2,.8,.2,1),opacity .4s;cursor:pointer;z-index:2}
+.ph .tilt{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .15s ease-out;--rad:30px}
+.ghost{position:absolute;left:50%;top:48%;width:246px;height:438px;border:2px dashed var(--steel);border-radius:30px;display:flex;align-items:flex-end;padding:20px;color:var(--steel)}
+.nav3{display:flex;justify-content:center;gap:12px;margin-top:14px}
+.nav3 button{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--ink);background:var(--panel);cursor:pointer;font-size:20px}
+.nav3 button:disabled{opacity:.3}
+.detail{background:var(--panel);border:1px solid var(--edge);border-radius:24px;padding:26px;min-height:300px;box-shadow:0 24px 40px -28px rgba(17,26,44,.35)}
+.detail h3{margin:0;font-size:28px;display:flex;align-items:center;gap:12px;letter-spacing:-.01em}
+.detail h3 i{width:18px;height:18px;border-radius:5px;background:var(--c)}
+.detail .when{font-size:20px;font-variant-numeric:tabular-nums;color:var(--steel);margin:4px 0 16px}
+.mk{margin:14px 0;padding-left:14px;border-left:4px solid var(--edge)}
+.mk.mkh{border-color:var(--in)}.mk.mkc{border-color:var(--out)}
+.mk small{display:block;color:var(--steel);font-size:13px}
+.mk q,.mk div{font-size:17px}
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;margin:18px 0}
+.bars div{font-size:13.5px;color:var(--steel)}
+.bars em{float:right;font-style:normal;color:var(--ink);font-variant-numeric:tabular-nums}
+.bars span{display:block;height:7px;border-radius:4px;background:var(--edge);margin-top:4px;overflow:hidden}
+.bars span i{display:block;height:100%;background:var(--c);width:0;transition:width .6s}
+.final{font-size:15px;color:var(--steel)}
+.final b{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:36px;color:var(--ink)}
+.tl{position:relative;height:34px;margin:18px 0 6px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:15px;height:4px;border-radius:2px;background:var(--edge)}
+.tl .span{position:absolute;top:11px;height:12px;border-radius:3px;background:var(--c)}
+.tl .in,.tl .out{position:absolute;top:4px;width:3px;height:26px;border-radius:2px}
+.tl .in{background:var(--in)}.tl .out{background:var(--out)}
+.tlab{display:flex;justify-content:space-between;font-size:13px;color:var(--steel);font-variant-numeric:tabular-nums}
+.lines{margin:16px 0 0;padding:0;list-style:none;max-height:230px;overflow:auto;border-top:1px solid var(--edge)}
+.lines li{display:grid;grid-template-columns:68px 1fr;gap:10px;padding:8px 6px 8px 10px;border-bottom:1px solid var(--edge);font-size:14.5px;border-left:4px solid transparent}
+.lines li.h{border-left-color:var(--in)}.lines li.c{border-left-color:var(--out)}
+.lines time{color:var(--steel);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lines i{color:var(--steel)}
+.notes{margin-top:30px;display:grid;gap:12px}
+.notes details{border-top:1px solid var(--edge);padding:12px 0}
+.notes summary{cursor:pointer;font-weight:600}
+.notes ul{margin:10px 0 0;padding-left:20px;color:var(--steel)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;opacity:0;pointer-events:none;transition:.25s;z-index:40}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+footer{margin-top:70px;padding:24px 0 60px;border-top:1px solid var(--edge);color:var(--steel);font-size:14px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.cond{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif}
+.kinds{display:flex;gap:6px;flex-wrap:wrap}
+.stnote{margin-top:8px;font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums;min-height:18px}
+.err{border:1.5px solid var(--out);background:#FFF1F2;border-radius:16px;padding:16px 18px;margin:0 0 18px;max-width:52em}
+.err p{margin:6px 0 0;color:var(--steel)}
+.elapsed{color:var(--steel);font-size:14px;margin:12px 0 0;font-variant-numeric:tabular-nums}
+.tlh{font-size:13px;color:var(--steel);margin-top:14px}
+.tag{display:inline-block;font-size:12.5px;padding:1px 9px;border-radius:999px;border:1px solid var(--edge);color:var(--steel);margin:0 6px 6px 0}
+.tag.ok{color:var(--in);border-color:var(--in)}.tag.bad{color:var(--out);border-color:var(--out)}.tag.warn{color:#9A5B00;border-color:#C98A1B}
+.lines li.sep{display:block;background:var(--paper);font-weight:600;border-left-color:transparent}
+.sumry{border:1.5px solid var(--ink);border-radius:16px;padding:16px 18px;background:var(--panel)}
+.sumry p{margin:6px 0 4px;font-size:17px}.sumry small{color:var(--steel)}
+.chkrow{display:grid;grid-template-columns:110px 190px 1fr;gap:12px;padding:8px 0;border-top:1px solid var(--edge);font-size:14.5px}
+@media(max-width:700px){.chkrow{grid-template-columns:1fr}}
+.reasons{margin:10px 0 0;padding-left:18px;color:var(--steel);font-size:14px}
+.inl{display:flex;gap:10px;align-items:center;margin-top:14px;font-size:14.5px}
+.inl input{width:auto;margin:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <div class="mark"><span class="reel" aria-hidden="true"></span>PromoAI</div>
+    <nav aria-label="Steps">
+      <button data-go="add" aria-current="step"><b>1</b><span>Add episodes</span></button>
+      <button data-go="work"><b>2</b><span>Find promos</span></button>
+      <button data-go="take"><b>3</b><span>Take your promos</span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <div>
+      <h1>Find the promo hiding in every episode</h1>
+      <p class="lead">PromoAI reads your screenplays and picks the short moments that make a stranger stop scrolling.</p>
+      <ul class="inout">
+        <li><b>You give it</b><span>Episode scripts, one .txt file per episode.</span></li>
+        <li><b>You get back</b><span>A ranked list of 20 to 60 second clips, each with start and end times, the hook and the cliffhanger.</span></li>
+      </ul>
+      <button class="btn primary" id="start">Add your episodes</button>
+    </div>
+    <div class="scene" id="scene" aria-hidden="true"><div class="backdrop"></div><div class="world" id="world"></div></div>
+  </div>
+
+  <section id="add">
+    <div class="sh"><span class="n">1</span><div><h2>Add your episodes</h2><p>This is where your data goes in.</p></div></div>
+    <div class="s1">
+      <div class="how">
+        <p>Drop your episode screenplays into the tray: <strong>one or many .txt files</strong>, one file per episode. We read the scene headings, dialogue, actions and timestamps from each file.</p>
+        <div class="btns">
+          <button class="btn" id="pick">Choose files</button>
+          <button class="btn" id="clearBtn" hidden>Clear the tray</button>
+        </div>
+        <input type="file" id="file" accept=".txt,text/plain" multiple hidden>
+      </div>
+      <div>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Drop episode files here, or press Enter to choose files">
+          <div class="plate" id="plate"><div class="base"></div></div>
+          <div class="dropmsg"><strong id="dropTitle">Drop episode files here</strong><span id="dropSub">or press to choose them. Plain .txt files only.</span></div>
+        </div>
+        <ul class="eplist" id="eplist" aria-live="polite"></ul>
+        <label class="inl" id="stitchRow" style="display:none"><input type="checkbox" id="chkStitch">Also look for clips that run across two episodes</label>
+        <div class="go"><button class="btn primary" id="findBtn" disabled>Find promos</button><span id="runHint">Add at least one episode first.</span></div>
+        <p class="small" id="keyWarn" hidden style="margin:10px 0 0;color:var(--out);font-size:14px"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="work">
+    <div class="sh"><span class="n">2</span><div><h2>Watch it work</h2><p>Each step lights up as it finishes. This can take several minutes for many episodes.</p></div></div>
+    <div class="err" id="err" hidden></div>
+    <div class="track" id="track"></div>
+    <p class="legend">Steps marked <span class="kind">Code</span> are exact and repeatable: reading files, checking rules, ranking. Steps marked <span class="kind ai">AI</span> are judgement calls: who the characters are, what makes a hook, how open an ending is.</p>
+    <p class="elapsed" id="elapsed"></p>
+    <ul class="log" id="log" aria-live="polite"></ul>
+  </section>
+
+  <section id="take">
+    <div class="sh"><span class="n">3</span><div><h2>Take your promos</h2><p>This is where the results come out, best clip first.</p></div></div>
+    <div class="tools">
+      <button class="btn" id="csv" disabled>Download CSV</button>
+      <button class="btn" id="report" disabled>Open the full report</button>
+      <button class="btn" id="copy" disabled>Copy all timestamps</button>
+    </div>
+    <div class="out">
+      <div>
+        <div class="stage" id="stage" tabindex="0" aria-label="Ranked promo clips. Use the left and right arrow keys to move between them."></div>
+        <div class="nav3"><button id="prev" aria-label="Previous clip" disabled>&lsaquo;</button><button id="next" aria-label="Next clip" disabled>&rsaquo;</button></div>
+      </div>
+      <div class="detail" id="detail"><h3>Nothing here yet</h3><p style="color:var(--steel)">Add episodes in step 1 and press Find promos. Each clip will show its start and end time, the opening line that hooks viewers, where it stops, and the exact script lines inside it.</p></div>
+    </div>
+    <div class="notes" id="notes"></div>
+  </section>
+
+  <footer>PromoAI reads script text only, so it cannot see acting, visuals or pacing. Hooks and cliffhangers are an AI model’s judgement from the dialogue and action lines, so review the top clips before posting.</footer>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const fmt=s=>{const m=Math.floor(s/60);return String(m).padStart(2,"0")+":"+(s-m*60).toFixed(1).padStart(4,"0")};
+const mmss=s=>Math.floor(s/60)+":"+String(Math.round(s%60)).padStart(2,"0");
+const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const PAL=["#0E6670","#34318F","#6B2B6E","#1F6B45","#8F4318"];
+const col=ep=>PAL[ep%5];
+const layers=(n,step)=>Array.from({length:n},(_,k)=>`<i class="ly" style="--k:${(k+1)*step}px"></i>`).join("");
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),2200)}
+async function api(path,opts){
+  const r=await fetch(path,opts);
+  if(!r.ok){let m="Request failed ("+r.status+")";try{m=(await r.json()).error||m}catch(_){}throw new Error(m)}
+  return r.json();
+}
+const OFFLINE=location.protocol==="file:";
+
+/* ---------- hero scene (decorative: real script lines, not results) ---------- */
+(function hero(){
+  const w=$("#world");
+  const pages=[[7,"-230px","30px","-170px","28deg","-7deg"],[9,"-120px","-18px","-250px","24deg","4deg"],[10,"-20px","40px","-330px","20deg","-3deg"]];
+  let h=pages.map(p=>`<div class="pg3d" style="--c:${col(p[0])};transform:translate3d(${p[1]},${p[2]},${p[3]}) rotateY(${p[4]}) rotateZ(${p[5]})">${layers(4,1.5)}<div class="pgface"><div class="band cond">Episode ${p[0]}</div></div></div>`).join("");
+  const ph=[[9,"There is a rumor going around, my Lord.","-10px","-20px","-30px","20deg","-3deg","6.4s","0s"],[10,"Dear God.","150px","44px","110px","-9deg","2deg","5.6s","-1.8s"],[7,"You have no authority here. Leave.","300px","-30px","-10px","-24deg","3deg","7s","-3.4s"]];
+  h+=ph.map(p=>`<div class="ph3d hp" style="--x:${p[2]};--y:${p[3]};--z:${p[4]};--ry2:${p[5]};--rz:${p[6]};--bt:${p[7]};--bd:${p[8]}"><div class="tilt" style="--c:${col(p[0])}">${layers(8,2)}<div class="face"><div class="top"><span class="ep cond">Episode ${p[0]}</span></div><div class="q">“${esc(p[1])}”</div></div></div></div>`).join("");
+  w.innerHTML=h;
+  if(reduce)return;
+  const sc=$("#scene");
+  sc.addEventListener("mousemove",e=>{const r=sc.getBoundingClientRect();const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;
+    w.style.setProperty("--ry",(px*22)+"deg");w.style.setProperty("--rx",(py*-14)+"deg")});
+  sc.addEventListener("mouseleave",()=>{w.style.setProperty("--ry","0deg");w.style.setProperty("--rx","0deg")});
+  let tick=false;
+  addEventListener("scroll",()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{w.style.setProperty("--sc",Math.min(scrollY,700)/700);tick=false})},{passive:true});
+})();
+$("#start").onclick=()=>document.getElementById("add").scrollIntoView({behavior:reduce?"auto":"smooth"});
+
+/* ---------- settings from the server ---------- */
+let CFG=null;
+async function loadConfig(){
+  if(OFFLINE){$("#runHint").textContent="Open this page through the server: run python server.py, then use the address it prints.";$("#findBtn").dataset.offline="1";return}
+  try{
+    CFG=await api("/api/config");
+    if(!CFG.key_ready){        // keys are set in the terminal before "python server.py"; say so instead of failing mid-run
+      $("#keyWarn").textContent=`No API key found. Stop the server (Ctrl+C), run  set ${CFG.api_key_env}=your-key  in the same terminal, then run python server.py again.`;
+      $("#keyWarn").hidden=false;
+    }
+  }catch(e){$("#runHint").textContent="Cannot reach the PromoAI server: "+e.message}
+}
+
+/* ---------- step 1: files ---------- */
+const eps=new Map();
+const toSec=t=>{const p=t.split(":").map(Number);return p.length===3?p[0]*3600+p[1]*60+p[2]:p[0]*60+p[1]};
+function parseEpisode(text,name){
+  const num=text.match(/EPISODE NUMBER:\s*Episode\s*(\d+)/i)||name.match(/episode[-_ ]?0*(\d+)/i);
+  const log=text.match(/EPISODE LOGLINE:\s*(.+)/i);
+  const blocks=(text.match(/^\*\*(.+?):?\*\*\s*$/gm)||[]).length;
+  let max=0;for(const m of text.matchAll(/End:\s*\(([\d:.]+)\)/gi))max=Math.max(max,toSec(m[1]));
+  if(!num)return{name,error:"No episode number found in this file."};
+  if(!blocks)return{name,error:"No timed lines found. Is this a screenplay file?"};
+  return{name,text,ep:+num[1],logline:log?log[1].trim():"",duration:max,lines:blocks};
+}
+function addTexts(items){
+  for(const it of items){
+    if(!/\.txt$/i.test(it.name)){toast(it.name+" is not a .txt file");continue}
+    const r=parseEpisode(it.text,it.name);
+    if(r.error)eps.set("bad:"+it.name,r);else eps.set(r.ep,r);
+  }
+  renderFiles();
+}
+async function addFiles(list){addTexts(await Promise.all([...list].map(async f=>({name:f.name,text:await f.text()}))))}
+function renderFiles(){
+  const all=[...eps.values()];
+  const good=all.filter(e=>!e.error).sort((a,b)=>a.ep-b.ep);
+  const plate=$("#plate");
+  plate.querySelectorAll(".slab").forEach(n=>n.remove());
+  good.slice(-14).forEach((e,i)=>{
+    const s=document.createElement("div");s.className="slab";
+    s.style.cssText=`--c:${col(e.ep)};--x:${((i*37)%19)-9}px;--y:${((i*23)%15)-7}px;--z:${i*11+6}px;--r:${((i*53)%11)-5}deg;--d:${reduce?0:i*70}ms`;
+    s.innerHTML=layers(3,1.8)+`<div class="pgface"><div class="band cond">Episode ${e.ep}</div></div>`;
+    plate.appendChild(s);
+  });
+  $("#eplist").innerHTML=all.map(e=>e.error
+    ?`<li><span class="e">File</span><span class="l">${esc(e.name)}</span><span></span><button class="x" data-rm="bad:${esc(e.name)}" aria-label="Remove ${esc(e.name)}">Remove</button><span class="bad">${esc(e.error)}</span></li>`
+    :`<li style="--c:${col(e.ep)}"><span class="e"><i></i>Episode ${e.ep}</span><span class="l" title="${esc(e.logline)}">${esc(e.logline)}</span><span class="t">${mmss(e.duration)}</span><button class="x" data-rm="${e.ep}" aria-label="Remove episode ${e.ep}">Remove</button></li>`).join("");
+  const n=good.length;
+  $("#clearBtn").hidden=!all.length;
+  $("#stitchRow").style.display=n>1?"":"none";          // joining episodes needs at least two of them
+  $("#dropTitle").textContent=n?n+" episode"+(n>1?"s":"")+" in the tray":"Drop episode files here";
+  $("#dropSub").textContent=n?"Drop more to add them.":"or press to choose them. Plain .txt files only.";
+  $("#findBtn").disabled=!n||OFFLINE||busy;
+  $("#findBtn").textContent="Find promos";
+  if(!OFFLINE)$("#runHint").textContent=n?"Reads "+good.reduce((a,e)=>a+e.lines,0)+" script lines.":"Add at least one episode first.";
+}
+$("#clearBtn").onclick=()=>{if(busy)return;eps.clear();renderFiles();toast("Tray cleared")};
+$("#eplist").addEventListener("click",e=>{const k=e.target.closest("[data-rm]");if(!k)return;const id=k.dataset.rm;eps.delete(id.startsWith("bad:")?id:+id);renderFiles()});
+const drop=$("#drop"),fileIn=$("#file");
+$("#pick").onclick=()=>fileIn.click();
+drop.addEventListener("click",()=>fileIn.click());
+drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fileIn.click()}});
+fileIn.addEventListener("change",()=>{addFiles(fileIn.files);fileIn.value=""});
+["dragenter","dragover"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add("over")}));
+["dragleave","drop"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove("over")}));
+drop.addEventListener("drop",e=>addFiles(e.dataTransfer.files));
+if(!reduce){
+  drop.addEventListener("mousemove",e=>{const r=drop.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5,p=$("#plate");
+    p.style.setProperty("--tx",(px*16)+"deg");p.style.setProperty("--ty",(py*-12)+"deg")});
+  drop.addEventListener("mouseleave",()=>{const p=$("#plate");p.style.setProperty("--tx","0deg");p.style.setProperty("--ty","0deg")});
+}
+
+/* ---------- step 2: the real run ---------- */
+const STEPS=[
+ {t:"Read the files",k:["Code"],d:"Finds scenes, lines and timestamps."},
+ {t:"Learn the characters",k:["AI"],d:"Matches nicknames to the same person."},
+ {t:"Find and score clips",k:["AI","Code"],d:"One episode at a time: pick clips, check the rules, score them."},
+ {t:"Rank them",k:["Code"],d:"Orders the clips and removes overlaps."},
+ {t:"Explain the order",k:["AI"],d:"Says why the top clips rank where they do."},
+ {t:"Check the work",k:["Code"],d:"Re-derives every timestamp from your files."}
+];
+$("#track").innerHTML=STEPS.map(s=>`<div class="st"><span class="kinds">${s.k.map(k=>`<span class="kind ${k==="AI"?"ai":""}">${k}</span>`).join("")}</span><h3>${s.t}</h3><p>${s.d}</p><div class="stnote"></div><div class="fill"><i></i></div></div>`).join("");
+const stEls=[...document.querySelectorAll(".st")];
+let busy=false,JOB=null,logShown=0,shown=[],active=0,RES=null;
+const stage=$("#stage");
+function resetRun(){
+  $("#err").hidden=true;$("#log").innerHTML="";logShown=0;$("#elapsed").textContent="";
+  stEls.forEach(s=>{s.classList.remove("active","done","det");s.querySelector(".stnote").textContent="";s.querySelector(".fill i").style.width=""});
+  shown=[];active=0;RES=null;ghosts();
+  $("#detail").innerHTML="<h3>Working on it</h3><p style='color:var(--steel)'>Results appear here when step 2 finishes.</p>";
+  $("#notes").innerHTML="";["#csv","#report","#copy","#prev","#next"].forEach(s=>$(s).disabled=true);
+}
+function showErr(msg){
+  const quota=/429|quota/i.test(msg);
+  $("#err").hidden=false;
+  $("#err").innerHTML=`<strong>The run stopped.</strong><p>${esc(msg)}</p><p>${quota?"The AI quota is used up for now. ":""}Press Find promos again to continue where it stopped. Answers already received are kept.</p>`;
+}
+function renderStatus(s){
+  s.steps.forEach((st,i)=>{
+    const el=stEls[i];if(!el)return;
+    el.classList.toggle("active",st.state==="active");el.classList.toggle("done",st.state==="done");el.classList.toggle("stop",st.state==="stopped");
+    el.querySelector(".stnote").textContent=st.note||"";
+    const det=st.state==="active"&&st.progress!=null;
+    el.classList.toggle("det",det);
+    if(det)el.querySelector(".fill i").style.width=Math.max(4,st.progress*100)+"%";else el.querySelector(".fill i").style.width="";
+  });
+  const ul=$("#log");
+  for(;logShown<s.log.length;logShown++){const li=document.createElement("li");li.innerHTML=`<time>${s.log[logShown].t.toFixed(1)}s</time>${esc(s.log[logShown].msg)}`;ul.appendChild(li)}
+  $("#elapsed").textContent="Running for "+mmss(s.elapsed);
+}
+async function poll(){
+  while(true){
+    let s;
+    try{s=await api("/api/status?job="+JOB)}catch(e){showErr("Lost contact with the PromoAI server. "+e.message);break}
+    renderStatus(s);
+    if(s.state==="done"){
+      try{showResults(await api("/api/result?job="+JOB))}catch(e){showErr(e.message)}
+      $("#elapsed").textContent="Finished in "+mmss(s.elapsed);
+      await new Promise(r=>setTimeout(r,400));$("section#take").scrollIntoView({behavior:reduce?"auto":"smooth"});
+      break;
+    }
+    if(s.state==="error"){showErr(s.error||"Unknown error");break}
+    await new Promise(r=>setTimeout(r,900));
+  }
+  busy=false;renderFiles();
+}
+$("#findBtn").addEventListener("click",async()=>{
+  if(busy||OFFLINE)return;
+  const good=[...eps.values()].filter(e=>!e.error);if(!good.length)return;
+  busy=true;resetRun();renderFiles();
+  $("section#work").scrollIntoView({behavior:reduce?"auto":"smooth"});
+  try{
+    const r=await api("/api/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      files:good.map(e=>({name:e.name,text:e.text})),stitch:good.length>1&&$("#chkStitch").checked})});
+    JOB=r.job;poll();
+  }catch(e){showErr(e.message);busy=false;renderFiles()}
+});
+
+/* ---------- step 3: results ---------- */
+const WHY={duration:"the clip was too short or too long",slow_open:"nothing happened in the first 3 seconds",model_reply_not_json:"the AI’s reply could not be read",bad_ids:"the AI pointed at lines that do not exist",order_overlap:"the clip’s parts were out of order",time_overlap:"the clip’s parts overlapped",no_segments:"the AI gave no clip",too_many_segments:"the clip had too many parts",bad_spec:"the AI’s answer was malformed",unknown_episode:"the AI named an unknown episode"};
+const STATUS={pass:["Passed","ok"],warn:["Needs a look","warn"],fail:["Failed","bad"],info:["Note",""]};
+const epLabel=p=>{const e=[...new Set(p.segments.map(s=>s.ep))];return e.length>1?"Ep "+e.join(" + "):"Episode "+e[0]};
+const sc=(p,k)=>{const v=p.scores&&p.scores[k];return v&&typeof v==="object"&&typeof v.score==="number"?v.score:null};
+function phoneHTML(p,thick){
+  const a=p.segments[0].start,b=p.segments[p.segments.length-1].end;
+  return `<div class="tilt" style="--c:${col(p.segments[0].ep)}">${layers(thick,2)}<div class="face">
+    <div class="top"><span class="ep cond">${esc(epLabel(p))}</span><span class="rk cond">#${p.rank}</span></div>
+    <div class="q">“${esc(p.hook)}”</div>
+    <div class="cut cond"><span class="a"><i></i>${fmt(a)}</span><span class="b"><i></i>${fmt(b)}</span></div>
+    <div class="dur">${p.total_duration.toFixed(1)} seconds${p.segments.length>1?", "+p.segments.length+" parts":""}</div></div></div>`;
+}
+function showResults(R){
+  RES=R;shown=R.promos;active=0;
+  const m=R.meta||{};
+  const used=(m.models_used||[]).join(", ");
+  let notes="";
+  if(m.stopped_reason)notes+=`<div class="err"><strong>Partial results.</strong><p>${esc(m.status||"")}</p></div>`;
+  if(m.ranking_summary)notes+=`<div class="sumry"><b>Which to post first</b><p>${esc(m.ranking_summary)}</p><small>Written by the AI model to explain the order. It is not a human decision.</small></div>`;
+  if(m.slate&&m.slate.length){
+    notes+=`<details open><summary>Posting plan (${m.slate.length} days)</summary><ul class="reasons">${m.slate.map(d=>`<li><b>Day ${d.day}:</b> #${d.rank} ${esc(d.episodes.length>1?"Ep "+d.episodes.join(" + "):"Episode "+d.episodes[0])}, “${esc(d.hook)}”. <span style="color:var(--steel)">${esc(d.why)}</span></li>`).join("")}</ul>${(m.slate_left_out||[]).length?`<p class="reasons"><b>Top promos not in the plan:</b> ${m.slate_left_out.map(x=>`#${x.rank} (${esc(x.why)})`).join("; ")}.</p>`:""}<p class="reasons">Built by code from the ranking: early episodes first so the big twists are not spoiled on day one, varied hook types, one promo per episode. This plan is the answer to “which would you post first”.</p></details>`;
+  }
+  const ER=[...(R.episode_ranking||[])].sort((a,b)=>(a.potential==null)-(b.potential==null)||(a.best_promo_rank==null)-(b.best_promo_rank==null)||(a.best_promo_rank||0)-(b.best_promo_rank||0)||(b.potential||0)-(a.potential||0)||a.ep-b.ep);
+  ER.forEach((r,i)=>r.position=i+1);
+  if(ER.length){
+    const sc=v=>v==null?"–":(+v).toFixed(1);
+    const rows=ER.map(r=>r.status==="ok"
+      ?`<tr><td class="n">${r.position}</td><td class="n">Episode ${r.ep}</td><td class="n"><b>${sc(r.potential)}</b></td><td class="n">${r.best_promo_rank?"#"+r.best_promo_rank:"(overlapped)"}</td><td class="n">${sc(r.hook)} / ${sc(r.cliffhanger)} / ${sc(r.standalone)} / ${sc(r.emotional)}</td><td>${esc(r.best_hook||"")}</td></tr>`
+      :`<tr><td class="n">${r.position}</td><td class="n">Episode ${r.ep}</td><td class="n">–</td><td class="n">–</td><td class="n">–</td><td style="color:var(--steel)">${esc(r.why||"")}</td></tr>`).join("");
+    notes+=`<details open><summary>Episodes ranked by their best promo (${ER.length})</summary><p class="reasons">Episodes are ordered by where their best promo landed in the final ranking (after the AI compared the top clips side by side). Potential is the highest score the AI gave any of the episode's clips on its own (0–5); the four scores are hook / cliffhanger / makes sense alone / emotional (each 1–5).</p><div style="overflow-x:auto"><table class="eprank"><tr><th>#</th><th>Episode</th><th>Potential</th><th>Best promo</th><th>Scores</th><th>Best hook / note</th></tr>${rows}</table></div></details>`;
+  }else if(R.no_promo&&R.no_promo.length){
+    const skipped=R.no_promo.filter(n=>n.not_processed),looked=R.no_promo.filter(n=>!n.not_processed);
+    notes+=`<details open><summary>Episodes with no promo (${R.no_promo.length})</summary><ul class="reasons">${skipped.length?`<li>${skipped.length} episode${skipped.length>1?"s were":" was"} not processed because the run stopped early: ${skipped.map(n=>n.ep).join(", ")}.</li>`:""}${looked.map(n=>`<li>Episode ${n.ep}: ${n.rejected?`${n.rejected} AI pick${n.rejected>1?"s were":" was"} thrown out because ${n.reasons.map(r=>WHY[r]||r).join("; ")||"they broke a rule"}.`:"the AI found no promo-worthy moment."}</li>`).join("")}</ul></details>`;
+  }
+  notes+=`<details><summary>Check the work</summary><div>${(R.audit||[]).map(c=>{const st=STATUS[c.status]||["",""];return `<div class="chkrow"><span><span class="tag ${st[1]}">${st[0]}</span></span><b>${esc(c.name)}</b><span>${esc(c.detail)}</span></div>`}).join("")}</div><p class="reasons">Answered by: ${esc(used||m.model||"unknown")}. ${m.scoring_model?`Every clip was scored by ${esc(m.scoring_model)}, so scores are comparable across episodes.`:(m.models_used||[]).length>1?"More than one model answered, so scores are not strictly comparable across episodes.":""}</p></details>`;
+  $("#notes").innerHTML=notes;
+  if(!shown.length){
+    $("#detail").innerHTML="<h3>No valid clips</h3><p style='color:var(--steel)'>The AI’s picks all broke a rule. See “Episodes with no promo” below for the reasons, then try again or change the model.</p>";
+    ghosts();return;
+  }
+  stage.innerHTML=shown.map((p,i)=>`<div class="ph" data-i="${i}" role="button" aria-label="Rank ${p.rank}, ${esc(epLabel(p))}">${phoneHTML(p,8)}</div>`).join("");
+  ["#csv","#report","#copy"].forEach(s=>$(s).disabled=false);
+  layout();select(0);
+}
+function layout(){
+  const cards=[...stage.querySelectorAll(".ph")];
+  cards.forEach((c,i)=>{
+    const o=i-active,a=Math.abs(o);
+    c.style.transform=`translate(-50%,-50%) translateX(${o*200}px) translateZ(${-a*170}px) rotateY(${-o*28}deg) scale(${a?0.94:1})`;
+    c.style.zIndex=50-a;c.style.opacity=a>3?0:1-a*.12;c.style.pointerEvents=a>3?"none":"auto";
+  });
+  $("#prev").disabled=active===0;$("#next").disabled=active>=shown.length-1;
+}
+const bar=(label,v)=>`<div>${label}<em>${v==null?"n/a":(Number.isInteger(+v)?v:(+v).toFixed(1))+" of 5"}</em><span><i data-w="${v==null?0:v*20}"></i></span></div>`;
+function select(i){
+  active=i;layout();const p=shown[i];
+  const first=p.segments[0],last=p.segments[p.segments.length-1];
+  const hookId=p.hook_event!=null?p.hook_event:(p.lines.find(l=>l.kind==="DIALOGUE")||{}).id;
+  const cliffId=p.cliffhanger_event!=null?p.cliffhanger_event:(p.lines[p.lines.length-1]||{}).id;
+  const cv=p.cold_viewer||{};
+  const cvTag=cv.can_answer===true?'<span class="tag ok">A new viewer could follow it</span>':cv.can_answer===false?'<span class="tag bad">A new viewer would be confused</span>':"";
+  const notes=(p.notes||[]).map(n=>`<span class="tag warn">${esc(String(n).slice(0,160))}</span>`).join("");
+  const tl=p.segments.map(s=>{const D=s.ep_duration||1,L=x=>(x/D*100).toFixed(1)+"%";
+    return `<div class="tlh">Episode ${s.ep} is ${mmss(D)} long</div><div class="tl" aria-hidden="true"><div class="span" style="left:${L(s.start)};width:${L(s.end-s.start)}"></div><div class="in" style="left:${L(s.start)}"></div><div class="out" style="left:calc(${L(s.end)} - 3px)"></div></div>`}).join("");
+  let lastEp=null;
+  const lines=p.lines.map(l=>{
+    let sep="";if(p.segments.length>1&&l.ep!==lastEp){sep=`<li class="sep">Episode ${l.ep}</li>`;lastEp=l.ep}
+    const h=l.id===hookId&&l.ep===first.ep,c=l.id===cliffId&&l.ep===last.ep;
+    return sep+`<li class="${h?"h":""} ${c?"c":""}"><time>${fmt(l.t)}</time><span>${l.who?"<i>"+esc(l.who)+"</i> ":""}${esc(l.text)}</span></li>`}).join("");
+  const reasons=["hook","cliffhanger","standalone","emotional"].map(k=>{const v=p.scores&&p.scores[k];return v&&v.reason?`<li><b>${k==="standalone"?"Makes sense alone":k[0].toUpperCase()+k.slice(1)}:</b> ${esc(v.reason)}</li>`:""}).join("");
+  $("#detail").style.setProperty("--c",col(first.ep));
+  $("#detail").innerHTML=`<h3><i></i>#${p.rank} ${esc(epLabel(p))}</h3>
+   <div class="when">${p.segments.map(s=>`Ep ${s.ep} ${fmt(s.start)} to ${fmt(s.end)}`).join(" and ")}, ${p.total_duration.toFixed(1)} seconds</div>
+   <div>${cvTag}${notes}</div>
+   <div class="mk mkh"><small>The hook (where the clip starts)</small><q>${esc(p.hook)}</q></div>
+   <div class="mk mkc"><small>The cliffhanger (where the clip stops)</small><div>${esc(p.cliffhanger)}</div></div>
+   <p>${esc(p.why)}</p>
+   ${p.post_reason?`<p><b>Why it ranks here:</b> ${esc(p.post_reason)}</p>`:""}
+   <div class="bars">${bar("Hook",sc(p,"hook"))}${bar("Cliffhanger",sc(p,"cliffhanger"))}${bar("Makes sense alone",sc(p,"standalone"))}${bar("Emotional pull",sc(p,"emotional"))}</div>
+   <div class="final"><b>${p.final_score==null?"n/a":(+p.final_score).toFixed(2)}</b> out of 5</div>
+   ${reasons?`<details><summary>Why these scores</summary><ul class="reasons">${reasons}</ul></details>`:""}
+   ${tl}
+   <ul class="lines">${lines}</ul>`;
+  requestAnimationFrame(()=>document.querySelectorAll(".bars i").forEach(b=>b.style.width=b.dataset.w+"%"));
+}
+stage.addEventListener("click",e=>{const p=e.target.closest(".ph");if(p)select(+p.dataset.i)});
+stage.addEventListener("keydown",e=>{if(e.key==="ArrowRight"&&active<shown.length-1){e.preventDefault();select(active+1)}if(e.key==="ArrowLeft"&&active>0){e.preventDefault();select(active-1)}});
+$("#prev").onclick=()=>select(active-1);$("#next").onclick=()=>select(active+1);
+if(!reduce){
+  stage.addEventListener("mousemove",e=>{
+    const ph=stage.querySelector(`.ph[data-i="${active}"]`);if(!ph)return;
+    const t=ph.querySelector(".tilt"),f=ph.querySelector(".face");
+    const r=ph.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;
+    t.style.transform=`rotateX(${Math.max(-12,Math.min(12,py*-14))}deg) rotateY(${Math.max(-18,Math.min(18,px*18))}deg)`;
+    f.style.setProperty("--mx",(px+.5)*100+"%");f.style.setProperty("--my",(py+.5)*100+"%");
+  });
+  stage.addEventListener("mouseleave",()=>stage.querySelectorAll(".tilt").forEach(t=>t.style.transform=""));
+}
+function ghosts(){
+  stage.innerHTML=[-1,0,1].map(o=>`<div class="ghost" style="transform:translate(-50%,-50%) translateX(${o*200}px) translateZ(${-Math.abs(o)*170}px) rotateY(${-o*28}deg);opacity:${o?.55:.95}">${o===0?"Your best clip lands here":""}</div>`).join("");
+}
+ghosts();
+$("#csv").onclick=()=>{if(JOB)location.href=`/download?job=${JOB}&file=ranked_promos.csv`};
+$("#report").onclick=()=>{if(JOB)window.open(`/download?job=${JOB}&file=dashboard.html`,"_blank")};
+$("#copy").onclick=async()=>{
+  const t=shown.map(p=>`#${p.rank} ${p.segments.map(s=>`Episode ${s.ep}: ${fmt(s.start)} to ${fmt(s.end)}`).join(" + ")}`).join("\n");
+  try{await navigator.clipboard.writeText(t)}catch(_){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove()}
+  toast("Timestamps copied");
+};
+
+/* ---------- step indicator ---------- */
+const navBtns=[...document.querySelectorAll("nav button")];
+navBtns.forEach(b=>b.onclick=()=>document.getElementById(b.dataset.go).scrollIntoView({behavior:reduce?"auto":"smooth"}));
+const secs=["add","work","take"].map(id=>document.querySelector("section#"+id));
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){navBtns.forEach(b=>b.removeAttribute("aria-current"));navBtns[secs.indexOf(e.target)].setAttribute("aria-current","step")}})},{rootMargin:"-35% 0px -55% 0px"});
+secs.forEach(s=>io.observe(s));
+loadConfig();
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+You are judging a candidate promo clip for a short-drama series. Score each dimension from 1 to 5 using the
+anchors below, with a one-line reason that points at a specific line of the clip.
+Use the WHOLE scale: a clip that fits an anchor exactly gets that number, even if it is 1 or 5. Do not default to 3.
+
+hook: does the first moment make a scrolling viewer stop?
+  1 = opens on setup, small talk or scenery; nothing happens in the first lines
+  2 = opens on mild tension or a line that only matters if you know the story
+  3 = opens on clear conflict, but it builds slowly
+  4 = opens on a sharp line or action: an insult, a threat, a slap, a surprising reveal
+  5 = the first line or action is shocking on its own, and a stranger would stop scrolling for it
+
+cliffhanger: does it end unresolved so the viewer needs the next part?
+  1 = the conflict is resolved by the last line
+  2 = ends on a calm or closing beat; little reason to continue
+  3 = ends with a question in the air, but low stakes
+  4 = ends on a clear open question, threat or decision
+  5 = ends at the peak: a reveal, an attack or an ultimatum, cut before the answer
+
+standalone: could a stranger follow who is who and what is at stake?
+  1 = confusing without the earlier episodes: unclear people, unclear stakes
+  2 = the main conflict is guessable but key people or stakes are unclear
+  3 = followable; one or two references need context
+  4 = clear who is fighting whom and why, from the clip alone
+  5 = completely self-contained: roles, conflict and stakes all clear in seconds
+
+emotional: how strong and specific is the emotion a viewer feels while watching?
+  1 = flat; information or logistics only
+  2 = mild feeling (annoyance, curiosity) with no real stakes for anyone
+  3 = a clear emotion (anger, fear, hurt) for one character
+  4 = intense emotion with personal stakes: humiliation, betrayal, danger to someone we see
+  5 = overwhelming: public humiliation, life-or-death danger, or a devastating betrayal, played out on screen
+
+Also tag hook_type as one of: slap, reveal, threat, betrayal, confession, other.
+Also copy into grab_line the exact words (up to 12) of the ONE line in the clip that would most make a viewer stop
+scrolling, wherever it appears in the clip.
+You see ONLY the clip, exactly as a stranger scrolling past would: no show summary, no earlier episodes. Judge only
+what is shown. If you cannot tell who someone is or what is at stake from the clip itself, that lowers standalone.
+
+Return ONLY JSON:
+{"hook":{"score":n,"reason":""},"cliffhanger":{"score":n,"reason":""},"standalone":{"score":n,"reason":""},"emotional":{"score":n,"reason":""},"hook_type":"","grab_line":""}
+
+CLIP:
+{{clip}}

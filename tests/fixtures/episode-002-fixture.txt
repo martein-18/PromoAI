@@ -1,0 +1,58 @@
+EPISODE NUMBER: Episode 2
+EPISODE LOGLINE: Victor learns the veiled woman carried his dead wife's seal and finds a letter accusing him.
+CONTINUITY NOTES: Picks up immediately after Episode 1.
+
+--- SCRIPT START ---
+
+SCENE 01
+Scene heading: INT. GRAND BALLROOM - NIGHT
+Scene start: 00:00.00
+Scene end: 00:44.00
+
+Actions and dialogue:
+
+**ACTION:**
+Start: (00:00.00) | End: (00:02.00)
+Victor slaps the butler across the face.
+
+**VICTOR (Furious):**
+Start: (00:02.00) | End: (00:05.00)
+"Who let the veiled woman in?"
+
+**BUTLER (Terrified):**
+Start: (00:05.50) | End: (00:09.00)
+"She had your late wife's seal, sir."
+
+**CAMERA:**
+Start: (00:09.00) | End: (00:12.00)
+Close-up of a wax seal pressed into a letter.
+
+**ACTION:**
+Start: (00:12.00) | End: (00:15.00)
+Victor tears the letter open with trembling hands.
+
+**VICTOR (Reading):**
+Start: (00:15.00) | End: (00:21.00)
+"If you are reading this, I did not die by accident."
+
+**ACTION:**
+Start: (00:21.00) | End: (00:24.00)
+Victor throws the letter into the fire.
+
+**MARA (Off-screen):**
+Start: (00:24.00) | End: (00:28.00)
+"Burning it won't save you, Victor."
+
+**ACTION:**
+Start: (00:28.00) | End: (00:31.00)
+Victor spins around. Mara stands in the doorway holding a second copy.
+
+**CAMERA:**
+Start: (00:31.00) | End: (00:40.00)
+Two-shot of Mara and Victor facing each other across the study.
+
+**VICTOR (Low):**
+Start: (00:40.50) | End: (00:44.00)
+"Then I will have to burn you too."
+
+--- SCRIPT END ---

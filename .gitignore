@@ -1,0 +1,9 @@
+data/
+outputs/
+__pycache__/
+*.pyc
+.env
+dist/
+venv/
+.venv/
+demo/
